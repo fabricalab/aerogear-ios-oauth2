@@ -156,6 +156,11 @@ open class OAuth2Module: AuthzModule {
             case .safariViewController:
                 let safariController = SFSafariViewController(url: url)
                 config.webViewHandler(safariController, completionHandler)
+            case .sfAuthenticationSession:
+                let session = SFAuthenticationSession(url: url, callbackURLScheme: "\(NSURL(string: config.redirectURL).scheme)://", completionHandler: {any, error in
+                    completionHandler(any as? URL, error as? Error)
+                })
+                session.start()
             }
         }
     }

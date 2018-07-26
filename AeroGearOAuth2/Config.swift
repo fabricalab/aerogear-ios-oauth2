@@ -105,11 +105,15 @@ open class Config {
     /**
     Enum to denote what kind of webView to use.
     */
-    public enum WebViewType {
-        case embeddedWebView
-        case externalSafari
-        case safariViewController
-    }
+
+        public enum WebViewType {
+            case embeddedWebView
+            case externalSafari
+            case safariViewController
+            case sfAuthenticationSession
+        }
+
+
 
     /**
     Set type of webView to use during OAuth flow.
