@@ -1,7 +1,7 @@
 source 'https://github.com/CocoaPods/Specs.git'
 
 project 'AeroGearOAuth2.xcodeproj'
-platform :ios, '9.0'
+platform :ios, '11.0'
 use_frameworks!
 
 target 'AeroGearOAuth2' do
