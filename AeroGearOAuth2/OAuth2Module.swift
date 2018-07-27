@@ -158,14 +158,20 @@ open class OAuth2Module: AuthzModule {
                 let safariController = SFSafariViewController(url: url)
                 config.webViewHandler(safariController, completionHandler)
             case .sfAuthenticationSession:
-                authenticationSession = SFAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme))://", completionHandler: { completionUrl, error in
-                    var completionError: NSError? = nil
+                authenticationSession = SFAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
                     if let unwrappedError = error {
-                        completionError = NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)])
+                        completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
+                    } else {
+                        if(completionUrl.absoluteString.hasPrefix(prefix: config.redirectURL)) {
+                            let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplicationLaunchOptionsKey.url:completionUrl])
+                            self.extractCode(notification, completionHandler: completionHandler)
+                        } else {
+                            completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": "CallbackUrl not match"]))
+                        }
+
                     }
-                    completionHandler(nil, completionError)
                 })
-                authenticationSession.start()
+                authenticationSession?.start()
             }
         }
     }
