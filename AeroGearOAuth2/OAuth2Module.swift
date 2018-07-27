@@ -57,6 +57,7 @@ open class OAuth2Module: AuthzModule {
     var applicationDidBecomeActiveNotificationObserver: NSObjectProtocol?
     var state: AuthorizationState
     open var webView: OAuth2WebViewController?
+    open var authenticationSession: SFAuthenticationSession?
     open var idToken: String?
     open var serverCode: String?
     open var customDismiss: Bool = false
@@ -157,14 +158,14 @@ open class OAuth2Module: AuthzModule {
                 let safariController = SFSafariViewController(url: url)
                 config.webViewHandler(safariController, completionHandler)
             case .sfAuthenticationSession:
-                let session = SFAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme))://", completionHandler: { completionUrl, error in
+                authenticationSession = SFAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme))://", completionHandler: { completionUrl, error in
                     var completionError: NSError? = nil
                     if let unwrappedError = error {
                         completionError = NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)])
                     }
                     completionHandler(nil, completionError)
                 })
-                session.start()
+                authenticationSession.start()
             }
         }
     }
