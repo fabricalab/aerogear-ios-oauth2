@@ -162,8 +162,8 @@ open class OAuth2Module: AuthzModule {
                     if let unwrappedError = error {
                         completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
                     } else {
-                        if(completionUrl.absoluteString.hasPrefix(prefix: config.redirectURL)) {
-                            let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplicationLaunchOptionsKey.url:completionUrl])
+                        if (completionUrl?.absoluteString.hasPrefix(self.config.redirectURL))! {
+                            let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplicationLaunchOptionsKey.url:completionUrl!])
                             self.extractCode(notification, completionHandler: completionHandler)
                         } else {
                             completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": "CallbackUrl not match"]))
