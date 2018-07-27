@@ -157,12 +157,12 @@ open class OAuth2Module: AuthzModule {
                 let safariController = SFSafariViewController(url: url)
                 config.webViewHandler(safariController, completionHandler)
             case .sfAuthenticationSession:
-                let session = SFAuthenticationSession(url: url, callbackURLScheme: "\(NSURL(string: config.redirectURL).scheme)://", completionHandler: { any, error in
-                    var completionError = nil
+                let session = SFAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme))://", completionHandler: { completionUrl, error in
+                    var completionError: NSError? = nil
                     if let unwrappedError = error {
-                        completionError = NSError(domain: "", code: 0, userInfo: String(describing: unwrappedError))
+                        completionError = NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)])
                     }
-                    completionHandler(any, completionError )
+                    completionHandler(nil, completionError)
                 })
                 session.start()
             }

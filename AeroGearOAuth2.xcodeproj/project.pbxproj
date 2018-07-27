@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		05BCE4A31DCFE1EC00DD931F /* FacebookOAuth2ModuleTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 485AAB841A372CB000ABEBB2 /* FacebookOAuth2ModuleTest.swift */; };
+		24F8087C00FE4CADB1A79B3D /* SFAuthenticationModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F80AD5C31F51B86EB0774D /* SFAuthenticationModule.swift */; };
 		4814EF4B19C1C0FA008BAC4D /* TrustedPersistantOAuth2Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4814EF4919C1C0FA008BAC4D /* TrustedPersistantOAuth2Session.swift */; };
 		4814EF4C19C1C0FA008BAC4D /* UntrustedMemoryOAuth2Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4814EF4A19C1C0FA008BAC4D /* UntrustedMemoryOAuth2Session.swift */; };
 		4814EF4E19C1C10C008BAC4D /* FacebookOAuth2Module.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4814EF4D19C1C10C008BAC4D /* FacebookOAuth2Module.swift */; };
@@ -59,6 +60,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		24F80AD5C31F51B86EB0774D /* SFAuthenticationModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SFAuthenticationModule.swift; sourceTree = "<group>"; };
 		2917739A0BF73285D969FA56 /* Pods_AeroGearOAuth2Tests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AeroGearOAuth2Tests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		425AC596F1B7BEC7C7342EC5 /* Pods_AeroGearOAuth2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_AeroGearOAuth2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4814EF4919C1C0FA008BAC4D /* TrustedPersistantOAuth2Session.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrustedPersistantOAuth2Session.swift; sourceTree = "<group>"; };
@@ -160,6 +162,7 @@
 				4814EF4D19C1C10C008BAC4D /* FacebookOAuth2Module.swift */,
 				48DE90A519CDEAEE007F9B21 /* KeycloakOAuth2Module.swift */,
 				48F79D9C1ABC191E00D8B712 /* OAuth2WebViewController.swift */,
+				24F80AD5C31F51B86EB0774D /* SFAuthenticationModule.swift */,
 			);
 			path = AeroGearOAuth2;
 			sourceTree = "<group>";
@@ -401,6 +404,7 @@
 				4814EF4E19C1C10C008BAC4D /* FacebookOAuth2Module.swift in Sources */,
 				483304A519AF44DF002F8DA9 /* Config.swift in Sources */,
 				4814EF4C19C1C0FA008BAC4D /* UntrustedMemoryOAuth2Session.swift in Sources */,
+				24F8087C00FE4CADB1A79B3D /* SFAuthenticationModule.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
