@@ -163,7 +163,7 @@ open class OAuth2Module: AuthzModule {
                         completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
                     } else {
                         if (completionUrl?.absoluteString.hasPrefix(self.config.redirectURL))! {
-                            let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplicationLaunchOptionsKey.url:completionUrl!])
+                            let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplication.LaunchOptionsKey.url:completionUrl!])
                             self.extractCode(notification, completionHandler: completionHandler)
                         } else {
                             completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": "CallbackUrl not match"]))
@@ -374,7 +374,7 @@ open class OAuth2Module: AuthzModule {
 
     func extractCode(_ notification: Notification, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         let info = notification.userInfo!
-        let url: URL? = info[UIApplicationLaunchOptionsKey.url] as? URL
+        let url: URL? = info[UIApplication.LaunchOptionsKey.url] as? URL
 
         // extract the code from the URL
         let queryParamsDict = self.parametersFrom(queryString: url?.query)
