@@ -72,7 +72,7 @@ open class OAuth2Module: AuthzModule {
 
     :returns: the newly initialized OAuth2Module.
     */
-    public required init(config: Config, session: OAuth2Session? = nil, requestSerializer: RequestSerializer = HttpRequestSerializer(), responseSerializer: ResponseSerializer = JsonResponseSerializer()) {
+    public required init(config: Config, session: OAuth2Session? = nil, requestSerializer: RequestSerializer = HttpRequestSerializer(), responseSerializer: ResponseSerializer = JsonResponseSerializerByCharset()) {
         if (config.accountId == nil) {
             config.accountId = "ACCOUNT_FOR_CLIENTID_\(config.clientId)"
         }
