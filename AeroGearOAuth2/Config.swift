@@ -25,6 +25,11 @@ open class Config {
     Applies the baseURL to the configuration.
     */
     public let baseURL: String
+    
+    /**
+    Applies the baseURL for user info endpoint to the configuration.
+    */
+    public let baseURLUserInfo: String?
 
     /**
     Applies the "callback URL" once request token issued.
@@ -128,8 +133,9 @@ open class Config {
         UIApplication.shared.keyWindow?.rootViewController?.present(webView, animated: true, completion: nil)
     }
 
-    public init(base: String, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari) {
+    public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari) {
         self.baseURL = base
+        self.baseURLUserInfo = baseURLUserInfo
         self.authzEndpoint = authzEndpoint
         self.redirectURL = redirectURL
         self.accessTokenEndpoint = accessTokenEndpoint

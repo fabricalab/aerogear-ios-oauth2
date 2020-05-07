@@ -52,6 +52,7 @@ open class OAuth2Module: AuthzModule {
 
     let config: Config
     open var http: Http
+    open var httpUserInfo: Http
     open var oauth2Session: OAuth2Session
     var applicationLaunchNotificationObserver: NSObjectProtocol?
     var applicationDidBecomeActiveNotificationObserver: NSObjectProtocol?
@@ -72,7 +73,7 @@ open class OAuth2Module: AuthzModule {
 
     :returns: the newly initialized OAuth2Module.
     */
-    public required init(config: Config, session: OAuth2Session? = nil, requestSerializer: RequestSerializer = HttpRequestSerializer(), responseSerializer: ResponseSerializer = JsonResponseSerializerByCharset()) {
+    public required init(config: Config, session: OAuth2Session? = nil, requestSerializer: RequestSerializer = AuthHttpRequestSerializer(), responseSerializer: ResponseSerializer = JsonResponseSerializerByCharset()) {
         if (config.accountId == nil) {
             config.accountId = "ACCOUNT_FOR_CLIENTID_\(config.clientId)"
         }
@@ -95,6 +96,8 @@ open class OAuth2Module: AuthzModule {
 
         self.http = Http(baseURL: config.baseURL, requestSerializer: requestSerializer, responseSerializer:  responseSerializer)
         self.state = .authorizationStateUnknown
+        
+        self.httpUserInfo = config.baseURLUserInfo != nil ? Http(baseURL: config.baseURLUserInfo, requestSerializer: requestSerializer, responseSerializer:  responseSerializer) : self.http
     }
 
     // MARK: Public API - To be overridden if necessary by OAuth2 specific adapter
@@ -153,7 +156,7 @@ open class OAuth2Module: AuthzModule {
                     config.webViewHandler(self.webView!, completionHandler)
                 }
             case .externalSafari:
-                UIApplication.shared.openURL(url)
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
             case .safariViewController:
                 let safariController = SFSafariViewController(url: url)
                 config.webViewHandler(safariController, completionHandler)
@@ -162,8 +165,8 @@ open class OAuth2Module: AuthzModule {
                     if let unwrappedError = error {
                         completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
                     } else {
-                        if (completionUrl?.absoluteString.hasPrefix(self.config.redirectURL))! {
-                            let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplication.LaunchOptionsKey.url:completionUrl!])
+                        if let compUrl = completionUrl,  compUrl.absoluteString.lowercased().hasPrefix(self.config.redirectURL.lowercased()) {
+                            let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplication.LaunchOptionsKey.url:compUrl])
                             self.extractCode(notification, completionHandler: completionHandler)
                         } else {
                             completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": "CallbackUrl not match"]))
@@ -296,7 +299,7 @@ open class OAuth2Module: AuthzModule {
             }
             if let userInfoEndpoint = self.config.userInfoEndpoint {
 
-                self.http.request(method: .get, path:userInfoEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: {(responseObject, error) in
+                self.httpUserInfo.request(method: .get, path:userInfoEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: {(responseObject, error) in
                     if (error != nil) {
                         completionHandler(nil, nil, error)
                         return
