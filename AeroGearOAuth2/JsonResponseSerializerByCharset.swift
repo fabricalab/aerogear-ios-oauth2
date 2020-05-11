@@ -23,7 +23,7 @@ open class JsonResponseSerializerByCharset : JsonResponseSerializer {
     public override init() {
         super.init()
         
-        self.validation = { (response: URLResponse?, data: Data) -> Void in
+        self.validation = { [unowned self] (response: URLResponse?, data: Data) -> Void  in
             var error: NSError! = NSError(domain: HttpErrorDomain, code: 0, userInfo: nil)
             let httpResponse = response as! HTTPURLResponse
             self.charset = httpResponse.textEncodingName ?? Charset.UTF_8.rawValue
@@ -49,7 +49,7 @@ open class JsonResponseSerializerByCharset : JsonResponseSerializer {
             }
         }
         
-        self.response = { (data: Data, Int) -> Any? in
+        self.response = { [unowned self] (data: Data, Int) -> Any? in
             do {
                 return try self.readResponseByCharset(data: data)
             } catch _ {

@@ -30,6 +30,11 @@ open class Config {
     Applies the baseURL for user info endpoint to the configuration.
     */
     public let baseURLUserInfo: String?
+    
+    /**
+    Applies the logout url to signout from openid service.
+    */
+    public let logoutURL: String?
 
     /**
     Applies the "callback URL" once request token issued.
@@ -116,6 +121,8 @@ open class Config {
             case externalSafari
             case safariViewController
             case sfAuthenticationSession
+            @available(iOS 12, *)
+            case asWebAuthenticationSession
         }
 
 
@@ -133,7 +140,7 @@ open class Config {
         UIApplication.shared.keyWindow?.rootViewController?.present(webView, animated: true, completion: nil)
     }
 
-    public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari) {
+    public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari, logoutURL:String? = nil) {
         self.baseURL = base
         self.baseURLUserInfo = baseURLUserInfo
         self.authzEndpoint = authzEndpoint
@@ -149,5 +156,6 @@ open class Config {
         self.audienceId = audienceId
         self.accountId = accountId
         self.webView = webView
+        self.logoutURL = logoutURL
     }
 }

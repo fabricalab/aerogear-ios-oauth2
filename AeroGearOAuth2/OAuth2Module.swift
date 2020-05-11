@@ -19,6 +19,7 @@ import Foundation
 import UIKit
 import SafariServices
 import AeroGearHttp
+import AuthenticationServices
 
 /**
 Notification constants emitted during oauth authorization flow.
@@ -59,6 +60,10 @@ open class OAuth2Module: AuthzModule {
     var state: AuthorizationState
     open var webView: OAuth2WebViewController?
     open var authenticationSession: SFAuthenticationSession?
+    @available(iOS 12, *)
+    private(set) lazy var webAuthenticationSession: ASWebAuthenticationSession? = nil
+    @available(iOS 13, *)
+    lazy public var contextProviding: ASWebAuthenticationPresentationContextProviding? = nil
     open var idToken: String?
     open var serverCode: String?
     open var customDismiss: Bool = false
@@ -175,6 +180,26 @@ open class OAuth2Module: AuthzModule {
                     }
                 })
                 authenticationSession?.start()
+            case .asWebAuthenticationSession:
+                if #available(iOS 12.0, *) {
+                    self.webAuthenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
+                        if let unwrappedError = error {
+                            completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
+                        } else {
+                            if let compUrl = completionUrl,  compUrl.absoluteString.lowercased().hasPrefix(self.config.redirectURL.lowercased()) {
+                                let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplication.LaunchOptionsKey.url:compUrl])
+                                self.extractCode(notification, completionHandler: completionHandler)
+                            } else {
+                                completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": "CallbackUrl not match"]))
+                            }
+
+                        }
+                    })
+                    if #available(iOS 13.0, *) {
+                        self.webAuthenticationSession?.presentationContextProvider = self.contextProviding
+                    }
+                    self.webAuthenticationSession?.start()
+                }
             }
         }
     }
@@ -371,6 +396,52 @@ open class OAuth2Module: AuthzModule {
     */
     open func isAuthorized() -> Bool {
         return self.oauth2Session.accessToken != nil && self.oauth2Session.tokenIsNotExpired()
+    }
+    
+    /**
+    Perform logout with the specified url in config
+
+    :param: completionHandler A block object to be executed when the request operation finishes.
+    */
+    public func logout(completionHandler: @escaping (AnyObject?, NSError?) -> Void){
+        if let urlString = self.config.logoutURL, let url = URL(string: urlString) {
+            switch config.webView {
+            case .embeddedWebView:
+                if self.webView != nil {
+                    self.webView!.targetURL = url
+                    config.webViewHandler(self.webView!, completionHandler)
+                }
+            case .externalSafari:
+                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+            case .safariViewController:
+                let safariController = SFSafariViewController(url: url)
+                config.webViewHandler(safariController, completionHandler)
+            case .sfAuthenticationSession:
+                authenticationSession = SFAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
+                    if let unwrappedError = error {
+                        completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
+                    } else {
+                        completionHandler(completionUrl as AnyObject?, nil)
+                    }
+                })
+                authenticationSession?.start()
+                
+            case .asWebAuthenticationSession:
+                if #available(iOS 12.0, *) {
+                    self.webAuthenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
+                        if let unwrappedError = error {
+                            completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
+                        } else {
+                            completionHandler(completionUrl as AnyObject?, nil)
+                        }
+                    })
+                    if #available(iOS 13.0, *) {
+                        self.webAuthenticationSession?.presentationContextProvider = self.contextProviding
+                    }
+                    self.webAuthenticationSession?.start()
+                }
+            }
+        }
     }
 
     // MARK: Internal Methods
