@@ -441,6 +441,8 @@ open class OAuth2Module: AuthzModule {
                     self.webAuthenticationSession?.start()
                 }
             }
+        }else {
+            completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": "No logout url found"]))
         }
     }
 
