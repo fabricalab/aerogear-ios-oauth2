@@ -91,6 +91,7 @@
 		48F79D9C1ABC191E00D8B712 /* OAuth2WebViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OAuth2WebViewController.swift; sourceTree = "<group>"; };
 		4BEBEA405587A6D46CBF5CBC /* Pods-AeroGearOAuth2.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AeroGearOAuth2.release.xcconfig"; path = "Pods/Target Support Files/Pods-AeroGearOAuth2/Pods-AeroGearOAuth2.release.xcconfig"; sourceTree = "<group>"; };
 		6CB5D8DB5479CD05722EB5A2 /* Pods-AeroGearOAuth2Tests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AeroGearOAuth2Tests.release.xcconfig"; path = "Pods/Target Support Files/Pods-AeroGearOAuth2Tests/Pods-AeroGearOAuth2Tests.release.xcconfig"; sourceTree = "<group>"; };
+		754C4987249A0C710033E9B9 /* AeroGearOAuth2.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = AeroGearOAuth2.podspec; sourceTree = "<group>"; };
 		757BB58B2462FA2000CE0F7A /* AuthHttpRequestSerializer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthHttpRequestSerializer.swift; sourceTree = "<group>"; };
 		75B2BDB022A5519600CF87DA /* JsonResponseSerializerByCharset.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JsonResponseSerializerByCharset.swift; sourceTree = "<group>"; };
 		9ADB5FF0CB048392A40B2D60 /* Pods.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -132,6 +133,7 @@
 		4833045819AF1635002F8DA9 = {
 			isa = PBXGroup;
 			children = (
+				754C4987249A0C710033E9B9 /* AeroGearOAuth2.podspec */,
 				4833046419AF1635002F8DA9 /* AeroGearOAuth2 */,
 				4833046E19AF1635002F8DA9 /* AeroGearOAuth2Tests */,
 				4833046319AF1635002F8DA9 /* Products */,
