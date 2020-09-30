@@ -111,6 +111,11 @@ open class Config {
     and can be any String. If AccountManager is not used, this field is optional.
     */
     open var accountId: String?
+    
+    /**
+     Custom params for authentication url
+     */
+    open var customParams: String?
 
     /**
     Enum to denote what kind of webView to use.
@@ -140,7 +145,7 @@ open class Config {
         UIApplication.shared.keyWindow?.rootViewController?.present(webView, animated: true, completion: nil)
     }
 
-    public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari, logoutURL:String? = nil) {
+    public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari, logoutURL:String? = nil, customParams:String? = nil) {
         self.baseURL = base
         self.baseURLUserInfo = baseURLUserInfo
         self.authzEndpoint = authzEndpoint
@@ -157,5 +162,6 @@ open class Config {
         self.accountId = accountId
         self.webView = webView
         self.logoutURL = logoutURL
+        self.customParams = customParams
     }
 }

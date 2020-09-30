@@ -141,7 +141,7 @@ open class OAuth2Module: AuthzModule {
         self.state = .authorizationStatePendingExternalApproval
 
         // calculate final url
-        var params = "?scope=\(config.scope)&redirect_uri=\(config.redirectURL.urlEncode())&client_id=\(config.clientId)&response_type=code"
+        var params = "?scope=\(config.scope)&redirect_uri=\(config.redirectURL.urlEncode())&client_id=\(config.clientId)&response_type=code\(config.customParams ?? "")"
 
         if let audienceId = config.audienceId {
             params = "\(params)&audience=\(audienceId)"
