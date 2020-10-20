@@ -116,6 +116,12 @@ open class Config {
      Custom params for authentication url
      */
     open var customParams: String?
+    
+    /**
+     This options = true makes ASWebAuthenticationSession to NOT share session, it means that users have
+     to insert credential every time. Avaiable only for > iOS13, otherwise is ignored
+     */
+    open var prefersEphemeralWebBrowserSession: Bool = false
 
     /**
     Enum to denote what kind of webView to use.
@@ -145,7 +151,7 @@ open class Config {
         UIApplication.shared.keyWindow?.rootViewController?.present(webView, animated: true, completion: nil)
     }
 
-    public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari, logoutURL:String? = nil, customParams:String? = nil) {
+    public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari, logoutURL:String? = nil, customParams:String? = nil, prefersEphemeralWebBrowserSession:Bool? = false) {
         self.baseURL = base
         self.baseURLUserInfo = baseURLUserInfo
         self.authzEndpoint = authzEndpoint
@@ -163,5 +169,6 @@ open class Config {
         self.webView = webView
         self.logoutURL = logoutURL
         self.customParams = customParams
+        self.prefersEphemeralWebBrowserSession = prefersEphemeralWebBrowserSession ?? false
     }
 }

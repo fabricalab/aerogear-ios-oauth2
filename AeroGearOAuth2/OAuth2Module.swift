@@ -197,6 +197,7 @@ open class OAuth2Module: AuthzModule {
                     })
                     if #available(iOS 13.0, *) {
                         self.webAuthenticationSession?.presentationContextProvider = self.contextProviding
+                        self.webAuthenticationSession?.prefersEphemeralWebBrowserSession = self.config.prefersEphemeralWebBrowserSession
                     }
                     self.webAuthenticationSession?.start()
                 }
