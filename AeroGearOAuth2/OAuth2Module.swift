@@ -294,6 +294,21 @@ open class OAuth2Module: AuthzModule {
     :param: completionHandler A block object to be executed when the request operation finishes.
     */
     open func requestAccess(completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
+        self.requestAccessByRefreshToken { (token, error) in
+            if let accessToken = token {
+                completionHandler(accessToken, nil)
+            }else {
+                self.requestAuthorizationCode(completionHandler: completionHandler)
+            }
+        }
+    }
+    
+    /**
+     Returns the current access token if it's not expired, otherwise retrieves it using refresh token.
+     Returns an error if none of the two attempts is successfully completed
+     - Parameter completionHandler: callback function with access token or error
+     */
+    open func requestAccessByRefreshToken(completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         if (self.oauth2Session.accessToken != nil && self.oauth2Session.tokenIsNotExpired()) {
             // we already have a valid access token, nothing more to be done
             completionHandler(self.oauth2Session.accessToken! as AnyObject?, nil)
@@ -301,8 +316,8 @@ open class OAuth2Module: AuthzModule {
             // need to refresh token
             self.refreshAccessToken(completionHandler: completionHandler)
         } else {
-            // ask for authorization code and once obtained exchange code for access token
-            self.requestAuthorizationCode(completionHandler: completionHandler)
+            // cannot get access token using refresh token
+            completionHandler(nil, NSError(domain: "OAuth2Module", code: 0, userInfo: ["OpenID Connect" : "Can't get access token using refresh token" ]))
         }
     }
 
