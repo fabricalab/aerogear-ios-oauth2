@@ -161,7 +161,8 @@ open class Config {
         UIApplication.shared.keyWindow?.rootViewController?.present(webView, animated: true, completion: nil)
     }
 
-    public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari, logoutURL:String? = nil, customParams:String? = nil, prefersEphemeralWebBrowserSession:Bool? = false) {
+    public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari, logoutURL:String? = nil, customParams:String? = nil, prefersEphemeralWebBrowserSession:Bool? = false, enableStateParam: Bool? = false,
+        enablePKCE: Bool? = false) {
         self.baseURL = base
         self.baseURLUserInfo = baseURLUserInfo
         self.authzEndpoint = authzEndpoint
@@ -180,5 +181,7 @@ open class Config {
         self.logoutURL = logoutURL
         self.customParams = customParams
         self.prefersEphemeralWebBrowserSession = prefersEphemeralWebBrowserSession ?? false
+        self.enableStateParam = enableStateParam ?? self.enableStateParam
+        self.enablePKCE = enablePKCE ?? self.enablePKCE
     }
 }
