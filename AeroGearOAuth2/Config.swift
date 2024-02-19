@@ -118,6 +118,16 @@ open class Config {
     open var customParams: String?
     
     /**
+     Custom params for authentication url
+     */
+    open var enablePKCE: Bool = false
+    
+    /**
+     Custom params for authentication url
+     */
+    open var enableStateParam: Bool = false
+    
+    /**
      This options = true makes ASWebAuthenticationSession to NOT share session, it means that users have
      to insert credential every time. Avaiable only for > iOS13, otherwise is ignored
      */

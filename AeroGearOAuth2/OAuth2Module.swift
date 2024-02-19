@@ -20,6 +20,7 @@ import UIKit
 import SafariServices
 import AeroGearHttp
 import AuthenticationServices
+import CommonCrypto
 
 /**
 Notification constants emitted during oauth authorization flow.
@@ -44,7 +45,7 @@ enum AuthorizationState {
 /**
 Parent class of any OAuth2 module implementing generic OAuth2 authorization flow.
 */
-open class OAuth2Module: AuthzModule {
+open class OAuth2Module : AuthzModule2 {
     /**
      Gateway to request authorization access.
 
@@ -103,6 +104,7 @@ open class OAuth2Module: AuthzModule {
         self.state = .authorizationStateUnknown
         
         self.httpUserInfo = config.baseURLUserInfo != nil ? Http(baseURL: config.baseURLUserInfo, requestSerializer: requestSerializer, responseSerializer:  responseSerializer) : self.http
+        self.httpUserInfo.authzModule = self
     }
 
     // MARK: Public API - To be overridden if necessary by OAuth2 specific adapter
@@ -146,6 +148,37 @@ open class OAuth2Module: AuthzModule {
         if let audienceId = config.audienceId {
             params = "\(params)&audience=\(audienceId)"
         }
+        
+        //-- PKCE protocol implementation
+        var verifier: String? = nil
+        if config.enablePKCE {
+            var buffer = [UInt8](repeating: 0, count: 32)
+            _ = SecRandomCopyBytes(kSecRandomDefault, buffer.count, &buffer)
+            verifier = Data(buffer).base64EncodedString()
+                .replacingOccurrences(of: "+", with: "-")
+                .replacingOccurrences(of: "/", with: "_")
+                .replacingOccurrences(of: "=", with: "")
+            
+            if let data = verifier!.data(using: .utf8) {
+                buffer = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+                _ = data.withUnsafeBytes {
+                    CC_SHA256($0.baseAddress, CC_LONG(data.count), &buffer)
+                }
+                let hash = Data(buffer)
+                let challenge = hash.base64EncodedString()
+                    .replacingOccurrences(of: "+", with: "-")
+                    .replacingOccurrences(of: "/", with: "_")
+                    .replacingOccurrences(of: "=", with: "")
+                params = "\(params)&code_challenge=\(challenge)&code_challenge_method=S256"
+            }
+        }
+        //--
+        
+        var stateParam: String? = nil
+        if config.enableStateParam {
+            stateParam = NSUUID().uuidString
+            params = "\(params)&state=\(stateParam!)"
+        }
 
         guard let computedUrl = http.calculateURL(baseURL: config.baseURL, url: config.authzEndpoint) else {
             let error = NSError(domain:AGAuthzErrorDomain, code:0, userInfo:["NSLocalizedDescriptionKey": "Malformatted URL."])
@@ -172,7 +205,7 @@ open class OAuth2Module: AuthzModule {
                     } else {
                         if let compUrl = completionUrl,  compUrl.absoluteString.lowercased().hasPrefix(self.config.redirectURL.lowercased()) {
                             let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplication.LaunchOptionsKey.url:compUrl])
-                            self.extractCode(notification, completionHandler: completionHandler)
+                            self.extractCode(notification, verifier: verifier, completionHandler: completionHandler)
                         } else {
                             completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": "CallbackUrl not match"]))
                         }
@@ -187,8 +220,13 @@ open class OAuth2Module: AuthzModule {
                             completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
                         } else {
                             if let compUrl = completionUrl,  compUrl.absoluteString.lowercased().hasPrefix(self.config.redirectURL.lowercased()) {
+                                let queryParamsDict = self.parametersFrom(queryString: compUrl.query)
+                                if let sp = stateParam, sp != queryParamsDict["state"] {
+                                    completionHandler(nil, NSError(domain: "", code:0, userInfo:["Error": "State param callback is not equal to the state param sent"]))
+                                    return
+                                }
                                 let notification = Notification(name: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, userInfo: [UIApplication.LaunchOptionsKey.url:compUrl])
-                                self.extractCode(notification, completionHandler: completionHandler)
+                                self.extractCode(notification, verifier: verifier, completionHandler: completionHandler)
                             } else {
                                 completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": "CallbackUrl not match"]))
                             }
@@ -246,7 +284,7 @@ open class OAuth2Module: AuthzModule {
     :param: code the 'authorization' code to exchange for an access token.
     :param: completionHandler A block object to be executed when the request operation finishes.
     */
-    open func exchangeAuthorizationCodeForAccessToken(code: String, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
+    open func exchangeAuthorizationCodeForAccessToken(code: String, verifier: String? = nil, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         var paramDict: [String: String] = ["code": code, "client_id": config.clientId, "redirect_uri": config.redirectURL, "grant_type":"authorization_code"]
 
         if let unwrapped = config.clientSecret {
@@ -255,6 +293,10 @@ open class OAuth2Module: AuthzModule {
 
         if let audience = config.audienceId {
             paramDict["audience"] = audience
+        }
+        
+        if let code_verifier = verifier { // PKCE compatibility
+            paramDict["code_verifier"] = code_verifier
         }
 
         http.request(method: .post, path: config.accessTokenEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: {(responseObject, error) in
@@ -464,7 +506,7 @@ open class OAuth2Module: AuthzModule {
 
     // MARK: Internal Methods
 
-    func extractCode(_ notification: Notification, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
+    func extractCode(_ notification: Notification, verifier: String? = nil, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         let info = notification.userInfo!
         let url: URL? = info[UIApplication.LaunchOptionsKey.url] as? URL
 
@@ -473,7 +515,7 @@ open class OAuth2Module: AuthzModule {
         let code = queryParamsDict["code"]
         // if exists perform the exchange
         if (code != nil) {
-            self.exchangeAuthorizationCodeForAccessToken(code: code!, completionHandler: completionHandler)
+            self.exchangeAuthorizationCodeForAccessToken(code: code!, verifier: verifier, completionHandler: completionHandler)
             // update state
             state = .authorizationStateApproved
         } else {

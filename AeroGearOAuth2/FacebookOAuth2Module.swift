@@ -33,7 +33,7 @@ open class FacebookOAuth2Module: OAuth2Module {
     :param: code the 'authorization' code to exchange for an access token.
     :param: completionHandler A block object to be executed when the request operation finishes.
     */
-    override open func exchangeAuthorizationCodeForAccessToken(code: String, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
+    override open func exchangeAuthorizationCodeForAccessToken(code: String, verifier: String?, completionHandler: @escaping (AnyObject?, NSError?) -> Void) {
         var paramDict: [String: String] = ["code": code, "client_id": config.clientId, "redirect_uri": config.redirectURL, "grant_type":"authorization_code"]
 
         if let unwrapped = config.clientSecret {
