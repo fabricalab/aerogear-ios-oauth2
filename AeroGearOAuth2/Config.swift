@@ -138,10 +138,10 @@ open class Config {
     */
 
         public enum WebViewType {
-            case embeddedWebView
+            //case embeddedWebView // UIWebView deprecated, TODO with WKWebView
             case externalSafari
             case safariViewController
-            case sfAuthenticationSession
+           // case sfAuthenticationSession // DEPRECATED
             @available(iOS 12, *)
             case asWebAuthenticationSession
         }
@@ -158,7 +158,8 @@ open class Config {
     */
     open var webViewHandler: ((UIViewController, _ completionHandler: (AnyObject?, NSError?) -> Void) -> ()) = {
         (webView, completionHandler) in
-        UIApplication.shared.keyWindow?.rootViewController?.present(webView, animated: true, completion: nil)
+        //UIApplication.shared.keyWindow?.rootViewController?.present(webView, animated: true, completion: nil) // DEPRECATED
+        UIApplication.shared.windows.filter {$0.isKeyWindow}.first?.rootViewController?.present(webView, animated: true, completion: nil)
     }
 
     public init(base: String, baseURLUserInfo: String? = nil, authzEndpoint: String, redirectURL: String, accessTokenEndpoint: String, clientId: String, audienceId: String? = nil, refreshTokenEndpoint: String? = nil, revokeTokenEndpoint: String? = nil, isOpenIDConnect: Bool = false, userInfoEndpoint: String? = nil, scopes: [String] = [],  clientSecret: String? = nil, accountId: String? = nil, webView: WebViewType = WebViewType.externalSafari, logoutURL:String? = nil, customParams:String? = nil, prefersEphemeralWebBrowserSession:Bool? = false, enableStateParam: Bool? = false,

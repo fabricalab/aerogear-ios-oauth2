@@ -59,8 +59,8 @@ open class OAuth2Module : AuthzModule2 {
     var applicationLaunchNotificationObserver: NSObjectProtocol?
     var applicationDidBecomeActiveNotificationObserver: NSObjectProtocol?
     var state: AuthorizationState
-    open var webView: OAuth2WebViewController?
-    open var authenticationSession: SFAuthenticationSession?
+    //open var webView: OAuth2WebViewController? // UIWebView DEPRECATED, TODO with WKWebView
+    //open var authenticationSession: SFAuthenticationSession? // DEPRECATED
     @available(iOS 12, *)
     private(set) lazy var webAuthenticationSession: ASWebAuthenticationSession? = nil
     @available(iOS 13, *)
@@ -91,10 +91,11 @@ open class OAuth2Module : AuthzModule2 {
 
         self.config = config
 
-        if config.webView == .embeddedWebView {
-            self.webView = OAuth2WebViewController()
+        /* TODO with WKWebView
+         if config.webView == .embeddedWebView {
+            //self.webView = OAuth2WebViewController()
             self.customDismiss = true
-        }
+        }*/
 
         if config.webView == .safariViewController {
             self.customDismiss = true
@@ -120,8 +121,9 @@ open class OAuth2Module : AuthzModule2 {
         // from the server.
         applicationLaunchNotificationObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name(rawValue: AGAppLaunchedWithURLNotification), object: nil, queue: nil, using: { (notification: Notification!) -> Void in
             self.extractCode(notification, completionHandler: completionHandler)
-            if ( self.webView != nil || self.customDismiss) {
-                UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true, completion: nil)
+            if (self.customDismiss) {
+                //UIApplication.shared.keyWindow?.rootViewController?.dismiss(animated: true, completion: nil)
+                UIApplication.shared.windows.filter {$0.isKeyWindow}.first?.rootViewController?.dismiss(animated: true, completion: nil)
             }
         })
 
@@ -188,17 +190,14 @@ open class OAuth2Module : AuthzModule2 {
 
         if let url = URL(string:computedUrl.absoluteString + params) {
             switch config.webView {
-            case .embeddedWebView:
-                if self.webView != nil {
-                    self.webView!.targetURL = url
-                    config.webViewHandler(self.webView!, completionHandler)
-                }
+            //case .embeddedWebView: // TODO with WKWebView
             case .externalSafari:
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
             case .safariViewController:
                 let safariController = SFSafariViewController(url: url)
                 config.webViewHandler(safariController, completionHandler)
-            case .sfAuthenticationSession:
+            /* DEPRECATED
+             case .sfAuthenticationSession:
                 authenticationSession = SFAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
                     if let unwrappedError = error {
                         completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
@@ -212,7 +211,7 @@ open class OAuth2Module : AuthzModule2 {
 
                     }
                 })
-                authenticationSession?.start()
+                authenticationSession?.start() */
             case .asWebAuthenticationSession:
                 if #available(iOS 12.0, *) {
                     self.webAuthenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
@@ -220,7 +219,7 @@ open class OAuth2Module : AuthzModule2 {
                             completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
                         } else {
                             if let compUrl = completionUrl,  compUrl.absoluteString.lowercased().hasPrefix(self.config.redirectURL.lowercased()) {
-                                let queryParamsDict = self.parametersFrom(queryString: compUrl.query)
+                                let queryParamsDict = compUrl.getQuerieParams
                                 if let sp = stateParam, sp != queryParamsDict["state"] {
                                     completionHandler(nil, NSError(domain: "", code:0, userInfo:["Error": "State param callback is not equal to the state param sent"]))
                                     return
@@ -376,10 +375,11 @@ open class OAuth2Module : AuthzModule2 {
                 completionHandler(nil, nil, error)
                 return
             }
-            var paramDict: [String: String] = [:]
-            if response != nil {
+            let paramDict: [String: String] = [:]
+            /* access token will no more sent by request params (Okta fails)
+             if response != nil {
                 paramDict = ["access_token": response! as! String]
-            }
+            }*/
             if let userInfoEndpoint = self.config.userInfoEndpoint {
 
                 self.httpUserInfo.request(method: .get, path:userInfoEndpoint, parameters: paramDict as [String : AnyObject]?, completionHandler: {(responseObject, error) in
@@ -464,16 +464,13 @@ open class OAuth2Module : AuthzModule2 {
     public func logout(completionHandler: @escaping (AnyObject?, NSError?) -> Void){
         if let urlString = self.config.logoutURL, let url = URL(string: urlString) {
             switch config.webView {
-            case .embeddedWebView:
-                if self.webView != nil {
-                    self.webView!.targetURL = url
-                    config.webViewHandler(self.webView!, completionHandler)
-                }
+            //case .embeddedWebView: // TODO with WKWebView
             case .externalSafari:
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
             case .safariViewController:
                 let safariController = SFSafariViewController(url: url)
                 config.webViewHandler(safariController, completionHandler)
+            /*
             case .sfAuthenticationSession:
                 authenticationSession = SFAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
                     if let unwrappedError = error {
@@ -483,7 +480,7 @@ open class OAuth2Module : AuthzModule2 {
                     }
                 })
                 authenticationSession?.start()
-                
+              */
             case .asWebAuthenticationSession:
                 if #available(iOS 12.0, *) {
                     self.webAuthenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
@@ -511,7 +508,7 @@ open class OAuth2Module : AuthzModule2 {
         let url: URL? = info[UIApplication.LaunchOptionsKey.url] as? URL
 
         // extract the code from the URL
-        let queryParamsDict = self.parametersFrom(queryString: url?.query)
+        let queryParamsDict = url?.getQuerieParams ?? [:]
         let code = queryParamsDict["code"]
         // if exists perform the exchange
         if (code != nil) {
@@ -534,31 +531,7 @@ open class OAuth2Module : AuthzModule2 {
         self.stopObserving()
     }
 
-    func parametersFrom(queryString: String?) -> [String: String] {
-        var parameters = [String: String]()
-        if (queryString != nil) {
-            let parameterScanner: Scanner = Scanner(string: queryString!)
-            var name: NSString? = nil
-            var value: NSString? = nil
-
-            while (parameterScanner.isAtEnd != true) {
-                name = nil
-                parameterScanner.scanUpTo("=", into: &name)
-                parameterScanner.scanString("=", into:nil)
-
-                value = nil
-                parameterScanner.scanUpTo("&", into:&value)
-                parameterScanner.scanString("&", into:nil)
-
-                if (name != nil && value != nil) {
-                    parameters[name!.removingPercentEncoding!] = value!.removingPercentEncoding
-                }
-            }
-        }
-
-        return parameters
-    }
-
+    
     deinit {
         self.stopObserving()
     }
