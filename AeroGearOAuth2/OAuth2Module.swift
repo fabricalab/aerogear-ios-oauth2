@@ -462,13 +462,13 @@ open class OAuth2Module : AuthzModule2 {
     :param: completionHandler A block object to be executed when the request operation finishes.
     */
     public func logout(completionHandler: @escaping (AnyObject?, NSError?) -> Void){
-        if let urlString = self.config.logoutURL, let url = URL(string: urlString) {
+        if let urlString = self.config.logoutURL, let url = URL(string: urlString), let id_token = self.oauth2Session.idToken, let urlTokenized = url.addParamsToNewUrl(params: ["id_token_hint" : id_token]) {
             switch config.webView {
             //case .embeddedWebView: // TODO with WKWebView
             case .externalSafari:
-                UIApplication.shared.open(url, options: [:], completionHandler: nil)
+                UIApplication.shared.open(urlTokenized, options: [:], completionHandler: nil)
             case .safariViewController:
-                let safariController = SFSafariViewController(url: url)
+                let safariController = SFSafariViewController(url: urlTokenized)
                 config.webViewHandler(safariController, completionHandler)
             /*
             case .sfAuthenticationSession:
@@ -483,7 +483,7 @@ open class OAuth2Module : AuthzModule2 {
               */
             case .asWebAuthenticationSession:
                 if #available(iOS 12.0, *) {
-                    self.webAuthenticationSession = ASWebAuthenticationSession(url: url, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
+                    self.webAuthenticationSession = ASWebAuthenticationSession(url: urlTokenized, callbackURLScheme: "\(String(describing: NSURL(string: config.redirectURL)!.scheme!))", completionHandler: { completionUrl, error in
                         if let unwrappedError = error {
                             completionHandler(nil, NSError(domain: "", code: 0, userInfo: ["Error": String(describing: unwrappedError)]))
                         } else {
